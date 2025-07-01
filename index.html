@@ -1,0 +1,1114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wall Art Arrangement Planner</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .header h1 {
+            color: #2c3e50;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .control-panel {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .control-panel h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #555;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s ease;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .color-input {
+            height: 50px;
+            cursor: pointer;
+        }
+
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: transform 0.2s ease;
+            margin: 5px;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+        }
+
+        .workspace {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .wall-container {
+            border: 3px dashed #ccc;
+            margin: 20px 0;
+            position: relative;
+            overflow: hidden;
+            min-height: 400px;
+        }
+
+        .artwork {
+            position: absolute;
+            cursor: move;
+            border: 2px solid transparent;
+            transition: border-color 0.3s ease;
+            user-select: none;
+        }
+
+        .artwork:hover {
+            border-color: #667eea;
+        }
+
+        .artwork.selected {
+            border-color: #e74c3c;
+            box-shadow: 0 0 15px rgba(231, 76, 60, 0.3);
+        }
+
+        .artwork img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            display: block;
+        }
+
+        .frame {
+            background: #8b4513;
+            box-sizing: border-box;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .matte {
+            background: #f5f5f5;
+            box-sizing: border-box;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .image-container {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .resize-handle {
+            position: absolute;
+            bottom: -5px;
+            right: -5px;
+            width: 15px;
+            height: 15px;
+            background: #667eea;
+            cursor: se-resize;
+            border-radius: 50%;
+        }
+
+        .artwork-controls {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            display: none;
+        }
+
+        .artwork-controls.active {
+            display: block;
+        }
+
+        .control-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .layouts-panel {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .layout-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .layout-item {
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 10px;
+            cursor: pointer;
+            transition: border-color 0.3s ease;
+        }
+
+        .layout-item:hover {
+            border-color: #667eea;
+        }
+
+        .layout-preview {
+            width: 100%;
+            height: 100px;
+            background: #f5f5f5;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #999;
+        }
+
+        .file-upload {
+            border: 2px dashed #667eea;
+            border-radius: 10px;
+            padding: 40px;
+            text-align: center;
+            background: #f8f9ff;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .file-upload:hover {
+            background: #f0f4ff;
+        }
+
+        .file-upload input {
+            display: none;
+        }
+
+        .uploaded-images {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .image-thumb {
+            width: 100px;
+            height: 100px;
+            object-fit: contain;
+            border-radius: 8px;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: border-color 0.3s ease;
+            background: #f8f9fa;
+        }
+
+        .image-thumb:hover {
+            border-color: #667eea;
+        }
+
+        @media (max-width: 768px) {
+            .controls {
+                grid-template-columns: 1fr;
+            }
+            
+            .control-row {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎨 Wall Art Arrangement Planner</h1>
+            <p style="text-align: center; color: #666; margin-top: 10px;">Design your perfect gallery wall before you hang it!</p>
+        </div>
+
+        <div class="controls">
+            <div class="control-panel">
+                <h3>Wall Settings</h3>
+                <div class="form-group">
+                    <label for="wallUnits">Wall Units</label>
+                    <select id="wallUnits" onchange="updateWallUnits()">
+                        <option value="inches">Inches</option>
+                        <option value="cm">Centimeters</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="wallWidth">Wall Width (<span id="wallWidthUnit">inches</span>)</label>
+                    <input type="number" id="wallWidth" value="120" min="24" max="300">
+                </div>
+                <div class="form-group">
+                    <label for="wallHeight">Wall Height (<span id="wallHeightUnit">inches</span>)</label>
+                    <input type="number" id="wallHeight" value="96" min="24" max="200">
+                </div>
+                <div class="form-group">
+                    <label for="wallColor">Wall Color</label>
+                    <input type="color" id="wallColor" value="#ffffff" class="color-input">
+                </div>
+                <div class="form-group">
+                    <label for="wallImageUpload">Wall Background Image (optional)</label>
+                    <input type="file" id="wallImageUpload" accept="image/*" onchange="handleWallImageUpload(event)">
+                    <button onclick="removeWallImage()" style="margin-top: 5px; font-size: 12px; padding: 5px 10px;">Remove Image</button>
+                </div>
+                <button onclick="updateWall()">Update Wall</button>
+            </div>
+
+            <div class="control-panel">
+                <h3>Upload Artwork</h3>
+                <div class="file-upload" onclick="document.getElementById('fileInput').click()">
+                    <input type="file" id="fileInput" accept="image/*" multiple onchange="handleImageUpload(event)">
+                    <p>📁 Click to upload artwork images</p>
+                    <p style="font-size: 12px; color: #666; margin-top: 5px;">Supports JPG, PNG, GIF</p>
+                </div>
+                <div class="uploaded-images" id="uploadedImages"></div>
+            </div>
+        </div>
+
+        <div class="workspace">
+            <h3>Your Gallery Wall</h3>
+            <div class="wall-container" id="wallContainer"></div>
+            
+            <div class="artwork-controls" id="artworkControls">
+                <h4>Selected Artwork Settings</h4>
+                <div class="control-row">
+                    <div class="form-group">
+                        <label for="artworkUnits">Artwork Units</label>
+                        <select id="artworkUnits" onchange="updateArtworkUnits()">
+                            <option value="inches">Inches</option>
+                            <option value="cm">Centimeters</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="maintainRatio" checked onchange="updateArtworkSize()"> Lock Aspect Ratio
+                        </label>
+                    </div>
+                </div>
+                <div class="control-row">
+                    <div class="form-group">
+                        <label for="artworkWidth">Width (<span id="artworkWidthUnit">inches</span>)</label>
+                        <input type="number" id="artworkWidth" step="0.1" min="1" onchange="updateArtworkSize()">
+                    </div>
+                    <div class="form-group">
+                        <label for="artworkHeight">Height (<span id="artworkHeightUnit">inches</span>)</label>
+                        <input type="number" id="artworkHeight" step="0.1" min="1" onchange="updateArtworkSize()">
+                    </div>
+                </div>
+                <div class="control-row">
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="hasFrame" onchange="updateSelectedArtwork()"> Add Frame
+                        </label>
+                    </div>
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="hasMatte" onchange="updateSelectedArtwork()"> Add Matte
+                        </label>
+                    </div>
+                </div>
+                <div class="control-row">
+                    <div class="form-group">
+                        <label for="frameColor">Frame Color</label>
+                        <select id="frameColor" onchange="updateSelectedArtwork()">
+                            <option value="#8b4513">Brown</option>
+                            <option value="#000000">Black</option>
+                            <option value="#ffffff">White</option>
+                            <option value="#c0c0c0">Silver</option>
+                            <option value="#ffd700">Gold</option>
+                            <option value="#d2b48c">Birch</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="frameSize">Frame Width (<span id="frameUnit">inches</span>)</label>
+                        <input type="number" id="frameSize" step="0.1" min="0.1" max="5" value="1" onchange="updateSelectedArtwork()">
+                    </div>
+                </div>
+                <div class="control-row">
+                    <div class="form-group">
+                        <label for="matteColor">Matte Color</label>
+                        <select id="matteColor" onchange="updateSelectedArtwork()">
+                            <option value="#f5f5f5">Off-White</option>
+                            <option value="#ffffff">White</option>
+                            <option value="#f0f0f0">Light Gray</option>
+                            <option value="#fffacd">Cream</option>
+                            <option value="#000000">Black</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="matteSize">Matte Width (<span id="matteUnit">inches</span>)</label>
+                        <input type="number" id="matteSize" step="0.1" min="0.1" max="5" value="1" onchange="updateSelectedArtwork()">
+                    </div>
+                </div>
+                <button onclick="deleteSelected()">🗑️ Remove Artwork</button>
+            </div>
+
+                <div style="margin-top: 20px;">
+                <input type="text" id="layoutName" placeholder="Enter layout name..." style="width: 200px; margin-right: 10px;">
+                <button onclick="saveLayout()">💾 Save Layout</button>
+                <button onclick="clearWall()">🗑️ Clear Wall</button>
+                <button onclick="exportLayouts()" style="background: #f39c12;">📤 Export Data</button>
+                <input type="file" id="importFile" accept=".json" style="display: none;" onchange="importLayouts(event)">
+                <button onclick="document.getElementById('importFile').click()" style="background: #3498db;">📥 Import Data</button>
+            </div>
+        </div>
+
+        <div class="layouts-panel">
+            <h3>Saved Layouts</h3>
+            <div class="layout-grid" id="savedLayouts"></div>
+        </div>
+    </div>
+
+    <script>
+        let artworkCounter = 0;
+        let selectedArtwork = null;
+        let isDragging = false;
+        let isResizing = false;
+        let dragOffset = { x: 0, y: 0 };
+        let savedLayouts = [];
+        let currentUnits = 'inches';
+        let wallScale = 1;
+        let wallBackgroundImage = null;
+        let currentArtworkUnits = 'inches';
+        let artworkAspectRatios = new Map(); // Store original aspect ratios
+
+        // Conversion functions
+        function inchesToCm(inches) {
+            return inches * 2.54;
+        }
+        
+        function cmToInches(cm) {
+            return cm / 2.54;
+        }
+        
+        function unitsToPixels(value, units) {
+            // Convert to inches first if needed
+            const inches = units === 'cm' ? cmToInches(value) : value;
+            // Scale based on current wall scale (pixels per inch)
+            return inches * wallScale;
+        }
+        
+        function pixelsToUnits(pixels, units) {
+            // Convert to inches first
+            const inches = pixels / wallScale;
+            // Convert to target units
+            return units === 'cm' ? inchesToCm(inches) : inches;
+        }
+
+        function updateWallUnits() {
+            const newUnits = document.getElementById('wallUnits').value;
+            const wallWidth = parseFloat(document.getElementById('wallWidth').value);
+            const wallHeight = parseFloat(document.getElementById('wallHeight').value);
+            
+            if (currentUnits !== newUnits) {
+                // Convert existing values
+                if (newUnits === 'cm') {
+                    document.getElementById('wallWidth').value = inchesToCm(wallWidth).toFixed(1);
+                    document.getElementById('wallHeight').value = inchesToCm(wallHeight).toFixed(1);
+                } else {
+                    document.getElementById('wallWidth').value = cmToInches(wallWidth).toFixed(1);
+                    document.getElementById('wallHeight').value = cmToInches(wallHeight).toFixed(1);
+                }
+                currentUnits = newUnits;
+            }
+            
+            // Update unit labels
+            document.getElementById('wallWidthUnit').textContent = newUnits;
+            document.getElementById('wallHeightUnit').textContent = newUnits;
+        }
+
+        function updateArtworkUnits() {
+            const newUnits = document.getElementById('artworkUnits').value;
+            const artworkWidth = parseFloat(document.getElementById('artworkWidth').value);
+            const artworkHeight = parseFloat(document.getElementById('artworkHeight').value);
+            
+            if (currentArtworkUnits !== newUnits && !isNaN(artworkWidth) && !isNaN(artworkHeight)) {
+                // Convert existing values
+                if (newUnits === 'cm') {
+                    document.getElementById('artworkWidth').value = inchesToCm(artworkWidth).toFixed(1);
+                    document.getElementById('artworkHeight').value = inchesToCm(artworkHeight).toFixed(1);
+                } else {
+                    document.getElementById('artworkWidth').value = cmToInches(artworkWidth).toFixed(1);
+                    document.getElementById('artworkHeight').value = cmToInches(artworkHeight).toFixed(1);
+                }
+                currentArtworkUnits = newUnits;
+            }
+            
+            // Update unit labels for artwork
+            document.getElementById('artworkWidthUnit').textContent = newUnits;
+            document.getElementById('artworkHeightUnit').textContent = newUnits;
+            document.getElementById('frameUnit').textContent = newUnits;
+            document.getElementById('matteUnit').textContent = newUnits;
+            
+            // Update artwork if one is selected
+            if (selectedArtwork) {
+                updateSelectedArtwork();
+            }
+        }
+
+        function handleWallImageUpload(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    wallBackgroundImage = e.target.result;
+                    updateWall();
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function removeWallImage() {
+            wallBackgroundImage = null;
+            document.getElementById('wallImageUpload').value = '';
+            updateWall();
+        }
+
+        // Load saved layouts from localStorage
+        function loadSavedLayouts() {
+            try {
+                const stored = localStorage.getItem('wallArtLayouts');
+                savedLayouts = stored ? JSON.parse(stored) : [];
+            } catch (error) {
+                console.error('Error loading layouts:', error);
+                savedLayouts = [];
+            }
+            
+            const container = document.getElementById('savedLayouts');
+            container.innerHTML = '';
+            
+            if (savedLayouts.length === 0) {
+                container.innerHTML = '<p style="color: #666; text-align: center; grid-column: 1/-1;">No saved layouts yet. Create your first gallery layout!</p>';
+                return;
+            }
+            
+            savedLayouts.forEach((layout, index) => {
+                const layoutDiv = document.createElement('div');
+                layoutDiv.className = 'layout-item';
+                layoutDiv.innerHTML = `
+                    <div class="layout-preview">Gallery ${index + 1}</div>
+                    <p><strong>${layout.name}</strong></p>
+                    <p style="font-size: 12px; color: #666;">${layout.artworks.length} artworks</p>
+                    <p style="font-size: 11px; color: #999;">${layout.date}</p>
+                    <button onclick="loadLayout(${index})" style="margin: 5px 5px 0 0;">Load</button>
+                    <button onclick="deleteLayout(${index})" style="background: #e74c3c;">Delete</button>
+                `;
+                container.appendChild(layoutDiv);
+            });
+        }
+
+        function saveLayoutsToStorage() {
+            try {
+                localStorage.setItem('wallArtLayouts', JSON.stringify(savedLayouts));
+                return true;
+            } catch (error) {
+                console.error('Error saving to localStorage:', error);
+                alert('Unable to save layout. Your browser storage might be full.');
+                return false;
+            }
+        }
+
+        function updateWall() {
+            const wallContainer = document.getElementById('wallContainer');
+            const units = document.getElementById('wallUnits').value;
+            const width = parseFloat(document.getElementById('wallWidth').value);
+            const height = parseFloat(document.getElementById('wallHeight').value);
+            const color = document.getElementById('wallColor').value;
+            
+            // Convert to inches for calculation
+            const widthInches = units === 'cm' ? cmToInches(width) : width;
+            const heightInches = units === 'cm' ? cmToInches(height) : height;
+            
+            // Calculate scale to fit within container (max 800x600)
+            wallScale = Math.min(800 / widthInches, 600 / heightInches);
+            const displayWidth = widthInches * wallScale;
+            const displayHeight = heightInches * wallScale;
+            
+            wallContainer.style.width = displayWidth + 'px';
+            wallContainer.style.height = displayHeight + 'px';
+            wallContainer.style.backgroundColor = color;
+            
+            // Set background image if available
+            if (wallBackgroundImage) {
+                wallContainer.style.backgroundImage = `url(${wallBackgroundImage})`;
+                wallContainer.style.backgroundSize = 'cover';
+                wallContainer.style.backgroundPosition = 'center';
+                wallContainer.style.backgroundRepeat = 'no-repeat';
+            } else {
+                wallContainer.style.backgroundImage = 'none';
+            }
+        }
+
+        function handleImageUpload(event) {
+            const files = event.target.files;
+            const container = document.getElementById('uploadedImages');
+            
+            for (let file of files) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const img = document.createElement('img');
+                    img.src = e.target.result;
+                    img.className = 'image-thumb';
+                    img.onclick = () => addToWall(e.target.result);
+                    container.appendChild(img);
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function addToWall(imageSrc) {
+            const wallContainer = document.getElementById('wallContainer');
+            const artwork = document.createElement('div');
+            artwork.className = 'artwork';
+            artwork.id = 'artwork-' + (++artworkCounter);
+            
+            // Create a temporary image to get natural dimensions
+            const tempImg = new Image();
+            tempImg.onload = function() {
+                const aspectRatio = tempImg.naturalWidth / tempImg.naturalHeight;
+                artworkAspectRatios.set(artwork.id, aspectRatio);
+                
+                // Set default size maintaining aspect ratio
+                const defaultWidth = 6; // inches
+                const defaultHeight = defaultWidth / aspectRatio;
+                const defaultWidthPixels = unitsToPixels(defaultWidth, 'inches');
+                const defaultHeightPixels = unitsToPixels(defaultHeight, 'inches');
+                
+                artwork.style.width = defaultWidthPixels + 'px';
+                artwork.style.height = defaultHeightPixels + 'px';
+            };
+            tempImg.src = imageSrc;
+            
+            artwork.innerHTML = `
+                <div class="frame" style="display: none;">
+                    <div class="matte" style="display: none;">
+                        <div class="image-container">
+                            <img src="${imageSrc}" alt="Artwork">
+                        </div>
+                    </div>
+                </div>
+                <img src="${imageSrc}" alt="Artwork" class="direct-img">
+                <div class="resize-handle"></div>
+            `;
+            
+            artwork.style.left = '20px';
+            artwork.style.top = '20px';
+            // Default size: 6 inches square (will be adjusted by image load)
+            const defaultSizePixels = unitsToPixels(6, 'inches');
+            artwork.style.width = defaultSizePixels + 'px';
+            artwork.style.height = defaultSizePixels + 'px';
+            
+            wallContainer.appendChild(artwork);
+            setupArtworkEvents(artwork);
+        }
+
+        function setupArtworkEvents(artwork) {
+            artwork.addEventListener('mousedown', function(e) {
+                if (e.target.classList.contains('resize-handle')) {
+                    isResizing = true;
+                } else {
+                    isDragging = true;
+                    const rect = artwork.getBoundingClientRect();
+                    dragOffset.x = e.clientX - rect.left;
+                    dragOffset.y = e.clientY - rect.top;
+                }
+                
+                selectArtwork(artwork);
+                e.preventDefault();
+            });
+        }
+
+        function selectArtwork(artwork) {
+            // Remove selection from all artworks
+            document.querySelectorAll('.artwork').forEach(art => {
+                art.classList.remove('selected');
+            });
+            
+            // Select the clicked artwork
+            artwork.classList.add('selected');
+            selectedArtwork = artwork;
+            
+            // Show controls
+            const controls = document.getElementById('artworkControls');
+            controls.classList.add('active');
+            
+            // Update control values based on current artwork
+            updateControlsFromArtwork(artwork);
+        }
+
+        function updateControlsFromArtwork(artwork) {
+            const frame = artwork.querySelector('.frame');
+            const matte = artwork.querySelector('.matte');
+            
+            document.getElementById('hasMatte').checked = matte.style.display !== 'none' && matte.style.backgroundColor !== 'transparent';
+            document.getElementById('hasFrame').checked = frame.style.display !== 'none' && frame.style.backgroundColor !== 'transparent';
+            
+            // For artwork with frames/mattes, we need to calculate the actual image size
+            // by subtracting the frame and matte dimensions
+            const units = document.getElementById('artworkUnits').value;
+            let totalWidth = artwork.offsetWidth;
+            let totalHeight = artwork.offsetHeight;
+            
+            // If there's framing, we need to get the image container size instead
+            const imageContainer = artwork.querySelector('.image-container');
+            if (imageContainer && imageContainer.style.width) {
+                const widthInUnits = pixelsToUnits(parseFloat(imageContainer.style.width), units);
+                const heightInUnits = pixelsToUnits(parseFloat(imageContainer.style.height), units);
+                document.getElementById('artworkWidth').value = widthInUnits.toFixed(1);
+                document.getElementById('artworkHeight').value = heightInUnits.toFixed(1);
+            } else {
+                // No framing, use total dimensions
+                const widthInUnits = pixelsToUnits(totalWidth, units);
+                const heightInUnits = pixelsToUnits(totalHeight, units);
+                document.getElementById('artworkWidth').value = widthInUnits.toFixed(1);
+                document.getElementById('artworkHeight').value = heightInUnits.toFixed(1);
+            }
+        }
+
+        function updateArtworkSize() {
+            if (!selectedArtwork) return;
+            
+            const maintainRatio = document.getElementById('maintainRatio').checked;
+            const units = document.getElementById('artworkUnits').value;
+            const width = parseFloat(document.getElementById('artworkWidth').value);
+            const height = parseFloat(document.getElementById('artworkHeight').value);
+            
+            if (maintainRatio && artworkAspectRatios.has(selectedArtwork.id)) {
+                const aspectRatio = artworkAspectRatios.get(selectedArtwork.id);
+                const expectedHeight = width / aspectRatio;
+                
+                if (Math.abs(height - expectedHeight) > 0.1) {
+                    // Height was changed, adjust width
+                    const newWidth = height * aspectRatio;
+                    document.getElementById('artworkWidth').value = newWidth.toFixed(1);
+                }
+            }
+            
+            // When updating artwork size, we need to recalculate the total dimensions
+            // including frame and matte
+            updateSelectedArtwork();
+        }
+
+        function updateSelectedArtwork() {
+            if (!selectedArtwork) return;
+            
+            const hasFrame = document.getElementById('hasFrame').checked;
+            const hasMatte = document.getElementById('hasMatte').checked;
+            const frameColor = document.getElementById('frameColor').value;
+            const frameSize = parseFloat(document.getElementById('frameSize').value);
+            const matteColor = document.getElementById('matteColor').value;
+            const matteSize = parseFloat(document.getElementById('matteSize').value);
+            const units = document.getElementById('artworkUnits').value;
+            
+            const frame = selectedArtwork.querySelector('.frame');
+            const matte = selectedArtwork.querySelector('.matte');
+            const directImg = selectedArtwork.querySelector('.direct-img');
+            const imageContainer = selectedArtwork.querySelector('.image-container');
+            
+            // Get the artwork's current dimensions (this is the image size)
+            const artworkWidth = parseFloat(document.getElementById('artworkWidth').value);
+            const artworkHeight = parseFloat(document.getElementById('artworkHeight').value);
+            const artworkWidthPixels = unitsToPixels(artworkWidth, units);
+            const artworkHeightPixels = unitsToPixels(artworkHeight, units);
+            
+            // Convert frame/matte sizes to pixels
+            const frameSizePixels = unitsToPixels(frameSize, units);
+            const matteSizePixels = unitsToPixels(matteSize, units);
+            
+            if (hasFrame || hasMatte) {
+                directImg.style.display = 'none';
+                frame.style.display = 'flex';
+                
+                // Calculate total dimensions
+                let totalWidth = artworkWidthPixels;
+                let totalHeight = artworkHeightPixels;
+                
+                if (hasMatte) {
+                    matte.style.display = 'flex';
+                    matte.style.backgroundColor = matteColor;
+                    totalWidth += matteSizePixels * 2; // Add matte on both sides
+                    totalHeight += matteSizePixels * 2;
+                } else {
+                    matte.style.display = 'flex';
+                    matte.style.backgroundColor = 'transparent';
+                }
+                
+                if (hasFrame) {
+                    frame.style.backgroundColor = frameColor;
+                    totalWidth += frameSizePixels * 2; // Add frame on both sides
+                    totalHeight += frameSizePixels * 2;
+                } else {
+                    frame.style.backgroundColor = 'transparent';
+                }
+                
+                // Set the total artwork container size
+                selectedArtwork.style.width = totalWidth + 'px';
+                selectedArtwork.style.height = totalHeight + 'px';
+                
+                // Set frame padding
+                frame.style.padding = hasFrame ? frameSizePixels + 'px' : '0';
+                
+                // Set matte padding  
+                matte.style.padding = hasMatte ? matteSizePixels + 'px' : '0';
+                
+                // Set image container size to exact artwork dimensions
+                if (imageContainer) {
+                    imageContainer.style.width = artworkWidthPixels + 'px';
+                    imageContainer.style.height = artworkHeightPixels + 'px';
+                    imageContainer.style.flexShrink = '0'; // Don't allow shrinking
+                }
+                
+            } else {
+                // No frame, no matte - just show direct image
+                frame.style.display = 'none';
+                matte.style.display = 'none';
+                directImg.style.display = 'block';
+                
+                // Reset to artwork dimensions only
+                selectedArtwork.style.width = artworkWidthPixels + 'px';
+                selectedArtwork.style.height = artworkHeightPixels + 'px';
+            }
+        }
+
+        function deleteSelected() {
+            if (selectedArtwork) {
+                selectedArtwork.remove();
+                selectedArtwork = null;
+                document.getElementById('artworkControls').classList.remove('active');
+            }
+        }
+
+        function saveLayout() {
+            const name = document.getElementById('layoutName').value || 'Untitled Layout';
+            const wallSettings = {
+                width: document.getElementById('wallWidth').value,
+                height: document.getElementById('wallHeight').value,
+                color: document.getElementById('wallColor').value,
+                units: document.getElementById('wallUnits').value,
+                backgroundImage: wallBackgroundImage
+            };
+            
+            const artworks = [];
+            document.querySelectorAll('.artwork').forEach(artwork => {
+                const style = window.getComputedStyle(artwork);
+                const img = artwork.querySelector('img');
+                const frame = artwork.querySelector('.frame');
+                const matte = artwork.querySelector('.matte');
+                
+                // Get frame and matte settings
+                const hasFrame = frame.style.display !== 'none' && frame.style.backgroundColor !== 'transparent';
+                const hasMatte = matte.style.display !== 'none' && matte.style.backgroundColor !== 'transparent';
+                
+                artworks.push({
+                    src: img.src,
+                    left: style.left,
+                    top: style.top,
+                    width: style.width,
+                    height: style.height,
+                    hasFrame: hasFrame,
+                    hasMatte: hasMatte,
+                    frameColor: frame.style.backgroundColor,
+                    matteColor: matte.style.backgroundColor,
+                    aspectRatio: artworkAspectRatios.get(artwork.id) || 1
+                });
+            });
+            
+            const newLayout = {
+                name: name,
+                wallSettings: wallSettings,
+                artworks: artworks,
+                date: new Date().toLocaleDateString(),
+                id: Date.now() // Unique ID
+            };
+            
+            savedLayouts.push(newLayout);
+            
+            if (saveLayoutsToStorage()) {
+                document.getElementById('layoutName').value = '';
+                loadSavedLayouts();
+                
+                // Show success message
+                const button = event.target;
+                const originalText = button.textContent;
+                button.textContent = '✅ Saved!';
+                button.style.background = '#27ae60';
+                setTimeout(() => {
+                    button.textContent = originalText;
+                    button.style.background = '';
+                }, 2000);
+            }
+        }
+
+        function loadLayout(index) {
+            const layout = savedLayouts[index];
+            
+            // Set wall settings
+            document.getElementById('wallWidth').value = layout.wallSettings.width;
+            document.getElementById('wallHeight').value = layout.wallSettings.height;
+            document.getElementById('wallColor').value = layout.wallSettings.color;
+            
+            // Set wall units if saved
+            if (layout.wallSettings.units) {
+                document.getElementById('wallUnits').value = layout.wallSettings.units;
+                updateWallUnits();
+            }
+            
+            // Set wall background image if saved
+            if (layout.wallSettings.backgroundImage) {
+                wallBackgroundImage = layout.wallSettings.backgroundImage;
+            } else {
+                wallBackgroundImage = null;
+            }
+            
+            updateWall();
+            
+            // Clear existing artworks
+            clearWall();
+            
+            // Add artworks
+            layout.artworks.forEach(artworkData => {
+                const wallContainer = document.getElementById('wallContainer');
+                const artwork = document.createElement('div');
+                artwork.className = 'artwork';
+                artwork.id = 'artwork-' + (++artworkCounter);
+                
+                // Store aspect ratio if available
+                if (artworkData.aspectRatio) {
+                    artworkAspectRatios.set(artwork.id, artworkData.aspectRatio);
+                }
+                
+                artwork.innerHTML = `
+                    <div class="frame" style="display: ${artworkData.hasFrame ? 'flex' : 'none'}; background-color: ${artworkData.frameColor || 'transparent'};">
+                        <div class="matte" style="display: ${artworkData.hasMatte ? 'flex' : 'none'}; background-color: ${artworkData.matteColor || 'transparent'};">
+                            <div class="image-container">
+                                <img src="${artworkData.src}" alt="Artwork">
+                            </div>
+                        </div>
+                    </div>
+                    <img src="${artworkData.src}" alt="Artwork" class="direct-img" style="display: ${artworkData.hasFrame || artworkData.hasMatte ? 'none' : 'block'};">
+                    <div class="resize-handle"></div>
+                `;
+                
+                artwork.style.left = artworkData.left;
+                artwork.style.top = artworkData.top;
+                artwork.style.width = artworkData.width;
+                artwork.style.height = artworkData.height;
+                
+                wallContainer.appendChild(artwork);
+                setupArtworkEvents(artwork);
+            });
+            
+            // Show success message
+            const button = event.target;
+            const originalText = button.textContent;
+            button.textContent = '✅ Loaded!';
+            button.style.background = '#27ae60';
+            setTimeout(() => {
+                button.textContent = originalText;
+                button.style.background = '';
+            }, 1500);
+        }
+
+        function deleteLayout(index) {
+            if (confirm(`Are you sure you want to delete "${savedLayouts[index].name}"?`)) {
+                savedLayouts.splice(index, 1);
+                saveLayoutsToStorage();
+                loadSavedLayouts();
+                
+                // Show success message briefly
+                const container = document.getElementById('savedLayouts');
+                const message = document.createElement('div');
+                message.style.cssText = 'grid-column: 1/-1; text-align: center; color: #e74c3c; font-weight: bold; padding: 10px;';
+                message.textContent = '🗑️ Layout deleted successfully';
+                container.prepend(message);
+                setTimeout(() => message.remove(), 2000);
+            }
+        }
+
+        function clearWall() {
+            if (document.querySelectorAll('.artwork').length > 0) {
+                if (confirm('Are you sure you want to clear all artwork from the wall?')) {
+                    document.getElementById('wallContainer').innerHTML = '';
+                    selectedArtwork = null;
+                    document.getElementById('artworkControls').classList.remove('active');
+                }
+            }
+        }
+
+        function exportLayouts() {
+            try {
+                const dataStr = JSON.stringify(savedLayouts, null, 2);
+                const dataBlob = new Blob([dataStr], {type: 'application/json'});
+                const url = URL.createObjectURL(dataBlob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = `wall-art-layouts-${new Date().toISOString().split('T')[0]}.json`;
+                link.click();
+                URL.revokeObjectURL(url);
+                
+                alert('✅ Layouts exported successfully! You can import this file on any device.');
+            } catch (error) {
+                alert('❌ Error exporting layouts: ' + error.message);
+            }
+        }
+
+        function importLayouts(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const importedLayouts = JSON.parse(e.target.result);
+                    
+                    if (!Array.isArray(importedLayouts)) {
+                        throw new Error('Invalid file format');
+                    }
+                    
+                    const confirmMsg = `Import ${importedLayouts.length} layouts? This will add to your existing layouts (won't replace them).`;
+                    if (confirm(confirmMsg)) {
+                        // Add imported layouts to existing ones
+                        savedLayouts.push(...importedLayouts);
+                        saveLayoutsToStorage();
+                        loadSavedLayouts();
+                        alert(`✅ Successfully imported ${importedLayouts.length} layouts!`);
+                    }
+                } catch (error) {
+                    alert('❌ Error importing file: Invalid format or corrupted file');
+                }
+            };
+            reader.readAsText(file);
+            
+            // Clear the input
+            event.target.value = '';
+        }
+
+        // Global mouse events for dragging and resizing
+        document.addEventListener('mousemove', function(e) {
+            if (isDragging && selectedArtwork) {
+                const wallContainer = document.getElementById('wallContainer');
+                const wallRect = wallContainer.getBoundingClientRect();
+                
+                let newX = e.clientX - wallRect.left - dragOffset.x;
+                let newY = e.clientY - wallRect.top - dragOffset.y;
+                
+                // Keep within bounds
+                newX = Math.max(0, Math.min(newX, wallContainer.offsetWidth - selectedArtwork.offsetWidth));
+                newY = Math.max(0, Math.min(newY, wallContainer.offsetHeight - selectedArtwork.offsetHeight));
+                
+                selectedArtwork.style.left = newX + 'px';
+                selectedArtwork.style.top = newY + 'px';
+            } else if (isResizing && selectedArtwork) {
+                const wallContainer = document.getElementById('wallContainer');
+                const wallRect = wallContainer.getBoundingClientRect();
+                const artworkRect = selectedArtwork.getBoundingClientRect();
+                
+                let newWidth = e.clientX - artworkRect.left;
+                let newHeight = e.clientY - artworkRect.top;
+                
+                // Maintain aspect ratio
+                const aspectRatio = selectedArtwork.offsetWidth / selectedArtwork.offsetHeight;
+                if (newWidth / newHeight > aspectRatio) {
+                    newWidth = newHeight * aspectRatio;
+                } else {
+                    newHeight = newWidth / aspectRatio;
+                }
+                
+                // Minimum size
+                newWidth = Math.max(50, newWidth);
+                newHeight = Math.max(50, newHeight);
+                
+                selectedArtwork.style.width = newWidth + 'px';
+                selectedArtwork.style.height = newHeight + 'px';
+            }
+        });
+
+        document.addEventListener('mouseup', function() {
+            isDragging = false;
+            isResizing = false;
+        });
+
+        // Initialize
+        updateWall();
+        updateWallUnits();
+        updateArtworkUnits();
+        loadSavedLayouts();
+    </script>
+</body>
+</html>
